@@ -2,24 +2,31 @@ import React, { Component } from 'react';
 
 import twitterLogo from '../twitter.svg';
 import './Timeline.css';
-
+import Tweet from '../components/Tweet';
 import api from '../services/api';
 
 
 export default class Timeline extends Component {
 
     state = {
+        tweets: [],
         newTweet: ""
     }
 
+    async componentDidMount(){
+        const response = await api.get('tweets');
+
+        this.setState({tweets: response.data, });
+    }
+
     handleNewTweet = async e => {
-        if (e.keyCode == 13){
+        if (e.keyCode === 13){
             const content = this.state.newTweet;
             const author = localStorage.getItem("@GoTwitter:userName");
 
             await api.post("tweets",{ author, content });
 
-            this.setState({ newState: '' });    
+            this.setState({ newTweet: '' }); 
         } else {
             return
         }
@@ -40,6 +47,11 @@ export default class Timeline extends Component {
                     onKeyDown={this.handleNewTweet}
                     placeholder="O que está acontecendo?" />
                 </form> 
+                <ul className="tweet-list">
+                    { this.state.tweets.map( tweet => (
+                        <Tweet key={tweet._id} tweet={tweet}></Tweet>
+                    ))}
+                </ul>
             </div> 
         );
     }
