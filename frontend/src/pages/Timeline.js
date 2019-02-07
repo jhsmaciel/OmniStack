@@ -1,39 +1,55 @@
 import React, { Component } from 'react';
+import api from '../services/api';
+import socket from 'socket.io-client';
 
 import twitterLogo from '../twitter.svg';
 import './Timeline.css';
-import Tweet from '../components/Tweet';
-import api from '../services/api';
 
+import Tweet from '../components/Tweet';
 
 export default class Timeline extends Component {
 
     state = {
         tweets: [],
         newTweet: ""
+    };
+
+    subsclibeToEvents = () => {
+        const io = socket('http://localhost:3000');
+
+        io.on('tweet', data => {
+            console.log(data);
+            this.setState({ tweets: [data, ...this.state.tweets]});
+        });
+
+        io.on('like', data => {
+            this.setState({ tweets: this.state.tweets.map(
+                tweet => ( tweet._id === data._id ? data : tweet )
+                )
+            });
+        });
+    }
+
+    handleInputChange = async e => {
+        this.setState({ newTweet: e.target.value });
     }
 
     async componentDidMount(){
+        this.subsclibeToEvents();
         const response = await api.get('tweets');
 
         this.setState({tweets: response.data, });
     }
 
     handleNewTweet = async e => {
-        if (e.keyCode === 13){
+        if (e.keyCode !== 13) return;
+
             const content = this.state.newTweet;
             const author = localStorage.getItem("@GoTwitter:userName");
 
             await api.post("tweets",{ author, content });
 
             this.setState({ newTweet: '' }); 
-        } else {
-            return
-        }
-    }
-
-    handleInputChange = e => {
-        this.setState({ newTweet: e.target.value });
     }
 
     render() {

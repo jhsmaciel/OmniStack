@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import api from '../services/api';
-import socket from 'socket.io-client';
+
 import like from "../like.svg";
 import './Tweet.css';
 
@@ -12,17 +12,6 @@ export default class Tweet extends Component {
         await api.post("likes/"+_id);
     }
 
-    subsclibeToEvents = () => {
-        const io = socket('http://localhost:3000');
-
-        io.on('tweet', data => {
-            console.log(data);
-            this.setState({ tweets: [data, ...this.state.tweets]});
-        });
-
-        io.on('like', data => {
-        });
-    }
 
     render() {
     const { tweet } = this.props;
